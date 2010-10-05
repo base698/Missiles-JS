@@ -1,0 +1,155 @@
+<html>
+<head>
+<title>
+  Raphael Test
+</title>
+<style>
+#canvas { background-color: #EEE; width: 400px; height 400px; margin: 0 auto; }
+</style>
+
+<script src="jquery-min.js"></script>
+<script src="raphael-min.js" type="text/javascript"></script>
+<script type="text/javascript">
+var commandxy = [30,340];
+var BOARD_HEIGHT = 400;
+var BOARD_WIDTH = 400;
+var SPLASH_RADIUS = 18;
+var ATTACK_SPEED = 6500;
+var LEVEL_CHANGE = 0.95;
+var MISSILE_FREQUENCY = 3000;
+var TARGET_RANGE = BOARD_WIDTH;
+var MISSILE_PER_LEVEL = 10;
+var SCORE_PER_MISSILE = 100;
+var missilesInFlight = {};
+var score = 0;
+var shots = 0;
+var paper;
+var hitsThisLevel = 0;
+var attackInterval;
+
+var Missle = {};
+
+$(document).ready( function () {
+  
+  paper = Raphael("canvas");
+  //var paper = Raphael(10, 50, 320, 200);
+
+  // Creates circle (base) at x, y, with radius 10
+  var circle = paper.circle(commandxy[0], commandxy[1], 10);
+  // Sets the fill attribute of the circle to red (#f00)
+  circle.attr("fill", "#f0f");
+
+  // Sets the stroke attribute of the circle to white
+  circle.attr("stroke", "#000");
+
+  $("#canvas").click( fire );
+
+  // This starts the flood of missiles.
+  attackInterval = setInterval(function(){doAttack(paper);},3000);
+
+} );
+
+function levelUp() {
+  clearInterval(attackInterval);
+  MISSILE_FREQUENCY = Math.floor(MISSILE_FREQUENCY * LEVEL_CHANGE);
+  ATTACK_SPEED = Math.floor(ATTACK_SPEED * LEVEL_CHANGE);
+  MISSILE_PER_LEVEL = MISSILE_PER_LEVEL * 1.05;
+  SCORE_PER_MISSILE = SCORE_PER_MISSILE * 1.05;
+  // XXX Increase target precision as well.
+  attackInterval = setInterval(function(){doAttack(paper);},MISSILE_FREQUENCY);
+}
+
+function fire(e) {
+  var startMissile = paper.path("M " + commandxy[0] + " " + commandxy[1] );     
+  startMissile.attr("width","3").animate(
+      {
+         path: "M" + commandxy[0] + " " + commandxy[1] + "L"+ e.offsetX + " " + e.offsetY
+       },   
+       1500, 
+       function() { 
+            doBoom(paper,e.offsetX,e.offsetY); 
+            startMissile.animate({opacity:0},1600);
+       });
+       shots++;
+}
+
+function doBoom(paper,x,y) {
+   var boom = paper.circle(x,y,1).attr("fill","#f00");
+   boom.animate({r: SPLASH_RADIUS},500,
+      function(){
+           boom.animate({opacity: 0},400);
+           detectHit(x,y,SPLASH_RADIUS);
+      });
+}
+
+function doAttack(paper) {
+  var randomTop = Math.floor(Math.random()*BOARD_WIDTH);   
+  var randomBottom = Math.floor(Math.random()*BOARD_WIDTH);
+  var startMissile = paper.path("M " + randomTop + " 2" );
+  startMissile.startPt = [randomTop,2];
+  startMissile.endPt = [randomBottom,375];
+ 
+  var missileId = startMissile.id;
+  missilesInFlight[missileId] = startMissile;
+  startMissile.created = (new Date()).getTime();
+
+  startMissile.attr("width","3").attr("missileId",startMissile.id).animate(      
+     { 
+        path: "M" + randomTop + " 2 L" + randomBottom + " 375 " 
+      },                                                                                     
+     ATTACK_SPEED,
+     function() {
+        startMissile.animate({opacity: 0},1600, 
+           function() { 
+             //paper.removeChild(startMissile); 
+             var missileId = this.id;
+             delete missilesInFlight[missileId];
+             missilesInFlight[missileId] = null;
+            });
+     });
+}
+
+// fix to actual distance
+function dist(pt1,pt2) {
+    var term1 = (pt1[1]-pt2[1]);
+    term1 = term1 * term1;
+    term2 = (pt1[0]-pt2[0]);
+    term2 = term2 * term2;
+    return Math.sqrt((term2 + term1));
+
+}
+
+function detectHit(x,y,r) {
+    for(var i in missilesInFlight) {
+       var m = missilesInFlight[i];
+       if(m === null) continue;
+
+       var now = (new Date()).getTime();
+       var elapsed = now - m.created;
+       var percent = elapsed/ATTACK_SPEED;
+       
+       var pt1 = m.startPt;
+       var pt2 = m.endPt;
+       console.log(pt1);
+       console.log(pt2);
+       var distPx = dist(pt1,pt2);
+       console.log("dist:" + distPx);
+       hitsThisLevel++;
+       score += Math.floor(SCORE_PER_MISSILE);
+    }
+
+    console.log(score);
+    if(hitsThisLevel >=  MISSILE_PER_LEVEL) {
+       hitsThisLevel = 0;
+       levelUp();
+    }  
+}
+</script>
+
+</head>
+<body>
+<div id="canvas"></div>
+</body>
+
+
+</html>
