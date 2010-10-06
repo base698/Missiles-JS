@@ -10,10 +10,10 @@
 <script src="jquery-min.js"></script>
 <script src="raphael-min.js" type="text/javascript"></script>
 <script type="text/javascript">
-var commandxy = [30,340];
+var commandxy = [30,400];
 var BOARD_HEIGHT = 400;
 var BOARD_WIDTH = 400;
-var SPLASH_RADIUS = 18;
+var SPLASH_RADIUS = 20;
 var ATTACK_SPEED = 6500;
 var LEVEL_CHANGE = 0.95;
 var MISSILE_FREQUENCY = 3000;
@@ -31,7 +31,7 @@ var Missle = {};
 
 $(document).ready( function () {
   
-  paper = Raphael("canvas");
+  paper = Raphael("canvas",400,400);
   //var paper = Raphael(10, 50, 320, 200);
 
   // Creates circle (base) at x, y, with radius 10
@@ -57,6 +57,7 @@ function levelUp() {
   SCORE_PER_MISSILE = SCORE_PER_MISSILE * 1.05;
   // XXX Increase target precision as well.
   attackInterval = setInterval(function(){doAttack(paper);},MISSILE_FREQUENCY);
+  console.log("Level up");
 }
 
 function fire(e) {
@@ -87,26 +88,31 @@ function doAttack(paper) {
   var randomBottom = Math.floor(Math.random()*BOARD_WIDTH);
   var startMissile = paper.path("M " + randomTop + " 2" );
   startMissile.startPt = [randomTop,2];
-  startMissile.endPt = [randomBottom,375];
+  startMissile.endPt = [randomBottom,BOARD_HEIGHT];
  
+  //console.log("attack Start: " + startMissile.startPt);
+  //console.log("attack End: " + startMissile.endPt);
+
   var missileId = startMissile.id;
   missilesInFlight[missileId] = startMissile;
   startMissile.created = (new Date()).getTime();
 
   startMissile.attr("width","3").attr("missileId",startMissile.id).animate(      
      { 
-        path: "M" + randomTop + " 2 L" + randomBottom + " 375 " 
+        path: "M" + randomTop + " 2 L" + randomBottom + " " + BOARD_HEIGHT 
       },                                                                                     
      ATTACK_SPEED,
-     function() {
-        startMissile.animate({opacity: 0},1600, 
-           function() { 
-             //paper.removeChild(startMissile); 
+     function() {removeMissile(startMissile);});
+}
+
+function removeMissile(startMissile) {
+        startMissile.animate({opacity: 0},1600,
+           function() {
+             //paper.removeChild(startMissile);
              var missileId = this.id;
              delete missilesInFlight[missileId];
              missilesInFlight[missileId] = null;
-            });
-     });
+           });
 }
 
 // fix to actual distance
@@ -130,19 +136,38 @@ function detectHit(x,y,r) {
        
        var pt1 = m.startPt;
        var pt2 = m.endPt;
-       console.log(pt1);
-       console.log(pt2);
-       var distPx = dist(pt1,pt2);
-       console.log("dist:" + distPx);
-       hitsThisLevel++;
-       score += Math.floor(SCORE_PER_MISSILE);
+       var currentEnd = endPointOfPercentLength(pt1,pt2,percent); 
+       var missileAtPt = currentEnd;
+       var within = ptWithin(missileAtPt,[x,y],r);
+
+       if(within) {
+          hitsThisLevel++;
+          score += Math.floor(SCORE_PER_MISSILE);
+          m.stop();
+          removeMissile(m);
+       }
     }
 
-    console.log(score);
     if(hitsThisLevel >=  MISSILE_PER_LEVEL) {
        hitsThisLevel = 0;
        levelUp();
     }  
+}
+
+// This is the issue
+function endPointOfPercentLength(pt1,pt2,percent) {
+   var rise = (pt2[1]-pt1[1]);
+   var run = (pt2[0]-pt1[0]);
+   var ptDist = dist(pt1,pt2);
+   var perDist = ptDist * percent;
+   var m = rise/run;
+   var pm = m * percent;
+   return [pt2[0]-(run*(1-percent)),pt2[1]-(rise*(1-percent))];
+}
+
+function ptWithin(ptAt,originPt,r) {
+   var distance = dist(ptAt,originPt);
+   return distance <= (r);
 }
 </script>
 
