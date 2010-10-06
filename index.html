@@ -5,8 +5,7 @@
 </title>
 <style>
 #canvas { background-color: #EEE; width: 400px; height 400px; margin: 0 auto; }
-.fonts { font-family: arial; color: #000; font-weight: 18px; }
-.fonts div { float: left; margin: 0 auto; }
+.fonts { font-family: arial; color: #000; font-weight: 18px; padding: 5px 5px 5px 5px; float: left; margin: 0 auto; }
 </style>
 
 <script src="jquery-min.js"></script>
@@ -63,19 +62,35 @@ function levelUp() {
   level++;
   $("#level").text("Level: " + level);
 }
-
+var missileCount = 0;
 function fire(e) {
-  var startMissile = paper.path("M " + commandxy[0] + " " + commandxy[1] );     
-  startMissile.attr("width","3").animate(
+  if(missileCount < 2) {
+     missileCount++;
+     var startMissile = paper.path("M " + commandxy[0] + " " + commandxy[1] );     
+     // this works in Chrome
+     var fireX = e.offsetX;
+     var fireY = e.offsetY;
+     // firefox fix
+     if(!fireX) {
+        fireX = e.pageX-e.currentTarget.offsetLeft;
+        fireY = e.pageY-e.currentTarget.offsetTop;
+      }
+
+      var mDist = dist(commandxy,[fireX,fireY]);
+      
+      var missileTimeInAir = Math.floor(2000 * (mDist/BOARD_HEIGHT));
+      startMissile.attr("width","3").animate(
       {
-         path: "M" + commandxy[0] + " " + commandxy[1] + "L"+ e.offsetX + " " + e.offsetY
+         path: "M" + commandxy[0] + " " + commandxy[1] + "L"+ fireX + " " + fireY
        },   
-       1500, 
+       missileTimeInAir, 
        function() { 
-            doBoom(paper,e.offsetX,e.offsetY); 
+            missileCount--;
+            doBoom(paper,fireX,fireY); 
             startMissile.animate({opacity:0},1600,function(){startMissile.remove();});
        });
        shots++;
+   }
 }
 
 function doBoom(paper,x,y) {
