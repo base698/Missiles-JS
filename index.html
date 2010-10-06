@@ -1,16 +1,18 @@
 <html>
 <head>
 <title>
-  Raphael Test
+ Missiles 
 </title>
 <style>
 #canvas { background-color: #EEE; width: 400px; height 400px; margin: 0 auto; }
+.fonts { font-family: arial; color: #000; font-weight: 18px; }
+.fonts div { float: left; margin: 0 auto; }
 </style>
 
 <script src="jquery-min.js"></script>
 <script src="raphael-min.js" type="text/javascript"></script>
 <script type="text/javascript">
-var commandxy = [30,400];
+var commandxy = [200,400];
 var BOARD_HEIGHT = 400;
 var BOARD_WIDTH = 400;
 var SPLASH_RADIUS = 20;
@@ -22,6 +24,7 @@ var MISSILE_PER_LEVEL = 10;
 var SCORE_PER_MISSILE = 100;
 var missilesInFlight = {};
 var score = 0;
+var level = 1;
 var shots = 0;
 var paper;
 var hitsThisLevel = 0;
@@ -57,7 +60,8 @@ function levelUp() {
   SCORE_PER_MISSILE = SCORE_PER_MISSILE * 1.05;
   // XXX Increase target precision as well.
   attackInterval = setInterval(function(){doAttack(paper);},MISSILE_FREQUENCY);
-  console.log("Level up");
+  level++;
+  $("#level").text("Level: " + level);
 }
 
 function fire(e) {
@@ -83,15 +87,21 @@ function doBoom(paper,x,y) {
       });
 }
 
+function doBadBoom(paper,x,y) {
+   var boom = paper.circle(x,y,1).attr("fill","#ff0");
+   boom.animate({r: SPLASH_RADIUS-5},500,
+      function(){
+           boom.animate({opacity: 0},400);
+           detectBaseHit(x,y,SPLASH_RADIUS-5);
+      });
+}
+
 function doAttack(paper) {
   var randomTop = Math.floor(Math.random()*BOARD_WIDTH);   
   var randomBottom = Math.floor(Math.random()*BOARD_WIDTH);
   var startMissile = paper.path("M " + randomTop + " 2" );
   startMissile.startPt = [randomTop,2];
   startMissile.endPt = [randomBottom,BOARD_HEIGHT];
- 
-  //console.log("attack Start: " + startMissile.startPt);
-  //console.log("attack End: " + startMissile.endPt);
 
   var missileId = startMissile.id;
   missilesInFlight[missileId] = startMissile;
@@ -102,7 +112,7 @@ function doAttack(paper) {
         path: "M" + randomTop + " 2 L" + randomBottom + " " + BOARD_HEIGHT 
       },                                                                                     
      ATTACK_SPEED,
-     function() {removeMissile(startMissile);});
+     function() {removeMissile(startMissile); doBadBoom(paper,randomBottom,BOARD_HEIGHT); });
 }
 
 function removeMissile(startMissile) {
@@ -125,6 +135,18 @@ function dist(pt1,pt2) {
 
 }
 
+function detectBaseHit(x,y,r) {
+   var baseHit = ptWithin([x,y],commandxy,r);
+   if(baseHit) {
+      updateFromBaseHit(commandxy);
+   }
+}
+
+function updateFromBaseHit(commandxy) {
+    alert("Game Over. Try again?");
+    window.location.reload();
+}
+
 function detectHit(x,y,r) {
     for(var i in missilesInFlight) {
        var m = missilesInFlight[i];
@@ -143,6 +165,7 @@ function detectHit(x,y,r) {
        if(within) {
           hitsThisLevel++;
           score += Math.floor(SCORE_PER_MISSILE);
+          $("#score").text("Score: " + score);
           m.stop();
           removeMissile(m);
        }
@@ -173,7 +196,9 @@ function ptWithin(ptAt,originPt,r) {
 
 </head>
 <body>
-<div id="canvas"></div>
+<div class="fonts"><div id="level">Level: 1</div><br>
+<div id="score">Score: 0</div></div>
+<br><br><div id="canvas"></div>
 </body>
 
 
