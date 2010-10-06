@@ -73,7 +73,7 @@ function fire(e) {
        1500, 
        function() { 
             doBoom(paper,e.offsetX,e.offsetY); 
-            startMissile.animate({opacity:0},1600);
+            startMissile.animate({opacity:0},1600,function(){startMissile.remove();});
        });
        shots++;
 }
@@ -82,7 +82,7 @@ function doBoom(paper,x,y) {
    var boom = paper.circle(x,y,1).attr("fill","#f00");
    boom.animate({r: SPLASH_RADIUS},500,
       function(){
-           boom.animate({opacity: 0},400);
+           boom.animate({opacity: 0},400,function(){boom.remove();});
            detectHit(x,y,SPLASH_RADIUS);
       });
 }
@@ -91,7 +91,7 @@ function doBadBoom(paper,x,y) {
    var boom = paper.circle(x,y,1).attr("fill","#ff0");
    boom.animate({r: SPLASH_RADIUS-5},500,
       function(){
-           boom.animate({opacity: 0},400);
+           boom.animate({opacity: 0},400,function(){boom.remove();});
            detectBaseHit(x,y,SPLASH_RADIUS-5);
       });
 }
@@ -122,6 +122,7 @@ function removeMissile(startMissile) {
              var missileId = this.id;
              delete missilesInFlight[missileId];
              missilesInFlight[missileId] = null;
+             startMissile.remove();
            });
 }
 
