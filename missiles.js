@@ -1,7 +1,7 @@
 // Coordinates for the base
-var commandxy = [200,400];
-var BOARD_HEIGHT = 400;
-var BOARD_WIDTH = 400;
+var BOARD_HEIGHT = 500;
+var BOARD_WIDTH = 700;
+var commandxy = [350,BOARD_HEIGHT];
 var SPLASH_RADIUS = 20;
 var ATTACK_SPEED = 6500;
 var LEVEL_CHANGE = 0.95;
@@ -18,11 +18,10 @@ var hitsThisLevel = 0;
 var attackInterval;
 
 var Missle = {};
-
+var socket = new io.Socket();
 var start =  function () {
   
-  paper = Raphael("canvas",400,400);
-  //var paper = Raphael(10, 50, 320, 200);
+  paper = Raphael("canvas",BOARD_WIDTH,BOARD_HEIGHT);
 
   // Creates circle (base) at x, y, with radius 10
   var base = paper.circle(commandxy[0], commandxy[1], 10);
@@ -34,10 +33,14 @@ var start =  function () {
 
   $("#canvas").click( fire );
 
+  $("#play").click( startGame );
   // This starts the flood of missiles.
-  attackInterval = setInterval( function(){ doAttack(paper); },3000 );
 
 };
+
+function startGame() {
+  attackInterval = setInterval( function(){ doAttack(paper); },3000 );
+}
 
 // on level up adjust the missile frequency
 function levelUp() {
@@ -96,7 +99,7 @@ function doBoom(paper,x,y) {
       });
 }
 
-// do explosion animation for their attack
+// do explosion animation for enemy attack
 function doBadBoom(paper,x,y) {
    var boom = paper.circle(x,y,1).attr("fill","#ff0");
    boom.animate({r: SPLASH_RADIUS-5},500,
@@ -159,8 +162,8 @@ function detectBaseHit(x,y,r) {
 
 // if so end game
 function updateFromBaseHit(commandxy) {
-    alert("Game Over. Try again?");
-    window.location.reload();
+    stopInterval(attackInterval);
+    // window.location.reload();
 }
 
 function detectHit(x,y,r) {
@@ -210,14 +213,3 @@ function ptWithin(ptAt,originPt,r) {
    var distance = dist(ptAt,originPt);
    return distance <= r;
 }
-</script>
-
-</head>
-<body>
-<div class="fonts"><div id="level">Level: 1</div><br>
-<div id="score">Score: 0</div></div>
-<br><br><div id="canvas"></div>
-</body>
-
-
-</html>
