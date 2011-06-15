@@ -59,7 +59,7 @@ var missileCount = 0;
 function fire(e) {
   if(missileCount < 2) {
      missileCount++;
-     var startMissile = paper.path("M " + commandxy[0] + " " + commandxy[1] );     
+
      // this works in Chrome
      var fireX = e.offsetX;
      var fireY = e.offsetY;
@@ -89,13 +89,17 @@ function fire(e) {
    }
 }
 
+function drawFire(baseX,baseY) {
+
+     var startMissile = paper.path("M " + baseX + " " + baseY );  
+}
+
 // do the explosion animation for your attack
 function doBoom(paper,x,y) {
    var boom = paper.circle(x,y,1).attr("fill","#f00");
    boom.animate({r: SPLASH_RADIUS},500,
       function(){
            boom.animate({opacity: 0},400,function(){boom.remove();});
-           detectHit(x,y,SPLASH_RADIUS);
       });
 }
 
@@ -105,33 +109,25 @@ function doBadBoom(paper,x,y) {
    boom.animate({r: SPLASH_RADIUS-5},500,
       function(){
            boom.animate({opacity: 0},400,function(){boom.remove();});
-           detectBaseHit(x,y,SPLASH_RADIUS-5);
       });
 }
 
-// this fires one missile from a random point to a random point
-function doAttack(paper) {
-  var randomTop = Math.floor(Math.random()*BOARD_WIDTH);   
-  var randomBottom = Math.floor(Math.random()*BOARD_WIDTH);
-  var startMissile = paper.path("M " + randomTop + " 2" );
-  startMissile.startPt = [randomTop,2];
-  startMissile.endPt = [randomBottom,BOARD_HEIGHT];
+function drawAttack(paper,missile) {
 
-  var missileId = startMissile.id;
-  missilesInFlight[missileId] = startMissile;
-  startMissile.created = (new Date()).getTime();
-
-  startMissile.attr("width","3").attr("missileId",startMissile.id).animate(      
-     { 
+	var startMissile = paper.path("M " + randomTop + " 2" );
+	startMissile.attr("width","3").attr("missileId",startMissile.id).animate( 
+		{ 
         path: "M" + randomTop + " 2 L" + randomBottom + " " + BOARD_HEIGHT 
       },                                                                
      ATTACK_SPEED,
      function() { 
           removeMissile(startMissile); 
           doBadBoom(paper,randomBottom,BOARD_HEIGHT); 
-     });
+	});
+
 }
 
+// this removes the missile on the screen
 function removeMissile(startMissile) {
         startMissile.animate({opacity: 0},1600,
            function() {
@@ -142,74 +138,4 @@ function removeMissile(startMissile) {
            });
 }
 
-// distance function between 2 points
-function dist(pt1,pt2) {
-    var term1 = (pt1[1]-pt2[1]);
-    term1 = Math.pow(term1,2);
-    term2 = (pt1[0]-pt2[0]);
-    term2 = Math.pow(term2,2);
-    return Math.sqrt((term2 + term1));
 
-}
-
-// did we get pwn'd?
-function detectBaseHit(x,y,r) {
-   var baseHit = ptWithin([x,y],commandxy,r);
-   if(baseHit) {
-      updateFromBaseHit(commandxy);
-   }
-}
-
-// if so end game
-function updateFromBaseHit(commandxy) {
-    stopInterval(attackInterval);
-    // window.location.reload();
-}
-
-function detectHit(x,y,r) {
-    for(var i in missilesInFlight) {
-       var m = missilesInFlight[i];
-       if(m === null) continue;
-
-       var now = (new Date()).getTime();
-       var elapsed = now - m.created;
-       var percent = elapsed/ATTACK_SPEED;
-       
-       var pt1 = m.startPt;
-       var pt2 = m.endPt;
-       var currentEndPoint = endPointOfPercentLength(pt1,pt2,percent); 
-       var within = ptWithin(currentEndPoint,[x,y],r);
-
-       if(within) {
-          hitsThisLevel++;
-          score += Math.floor(SCORE_PER_MISSILE);
-          $("#score").text("Score: " + score);
-          m.stop();
-          removeMissile(m);
-       }
-    }
-
-    // level up condition
-    if(hitsThisLevel >=  MISSILE_PER_LEVEL) {
-       hitsThisLevel = 0;
-       levelUp();
-    }  
-}
-
-// for 2 points and a percent, calculate the point on the 
-// line representing percent past start point 
-function endPointOfPercentLength(pt1,pt2,percent) {
-   var rise = (pt2[1]-pt1[1]);
-   var run = (pt2[0]-pt1[0]);
-   var ptDist = dist(pt1,pt2);
-   var perDist = ptDist * percent;
-   var m = rise/run;
-   var pm = m * percent;
-   return [pt2[0]-(run*(1-percent)),pt2[1]-(rise*(1-percent))];
-}
-
-// detect if ptAt is within circle
-function ptWithin(ptAt,originPt,r) {
-   var distance = dist(ptAt,originPt);
-   return distance <= r;
-}
