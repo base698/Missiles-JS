@@ -4,9 +4,15 @@
  Missiles 
 </title>
 <style>
-#play { position: relative; margin: 0 0 0 102px; top: 10px; }
-#canvas { background-color: #EEE; width: 800px; height 600px; margin: 0 auto; }
-.fonts { font-family: arial; color: #000; font-weight: 18px; padding: 5px 5px 5px 5px; float: left; margin: 0 auto; }
+div {display: block; }
+#play { position:relative; }
+body div input {  }
+.stats h3 { margin: 20px 0 2px 0;padding: 0 0 2px 0; }
+.game { margin: 0 0 0 150px; }
+#level {font-family:arial; font-weight: 18px; margin-left: 500px; } 
+#canvas { background-color: #EEE; width: 800px; height 600px;  }
+.stats { font-family: arial; color: #000; font-weight: 18px; padding: 2px 2px 2px 2px; float: left; margin: 0 auto; }
+div.multi { float: right; }
 </style>
 
 <script src="/jquery-min.js"></script>
@@ -20,12 +26,13 @@ $(document).ready(start);
 </script>
 </head>
 <body>
-	<div class="fonts">
-	<div id="level">Level: 1</div><br>
-	<div id="score">Score: 0</div></div>
-   <div>
-   <button id="play">Play</button>
-	<br><br>
+	<div class="stats">
+      <h3>Scores</h3>
+		<div id="score">Score: 0</div>
+	</div>
+   <div class="game">
+   <input type="text" value="Player"><button id="play">Play</button>
+	<span id="level">Level: 1</span><br>
 	<div id="canvas"></div>
    </div>
 </body>
