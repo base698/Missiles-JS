@@ -93,10 +93,10 @@ function dist(pt1,pt2) {
 }
 
 // did we get pwn'd?
-function detectBaseHit(x,y,r) {
-   var baseHit = ptWithin([x,y],commandxy,r);
+function detectBaseHit(c,x,y,r) {
+   var baseHit = ptWithin([x,y],c.commandxy,r);
    if(baseHit) {
-      updateFromBaseHit(commandxy);
+      updateFromBaseHit(c.commandxy);
    }
 }
 
