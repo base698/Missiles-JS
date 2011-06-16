@@ -3,31 +3,44 @@ var BOARD_HEIGHT = 500;
 var BOARD_WIDTH = 700;
 var paper;
 
-
 function onMessage(m) {
 	if(m.action == 'missile') {
 		drawAttack(paper,m);
 	} else if(m.action == 'drawBase') {
 		console.log(m);
-		drawBase(m.commandxy);	
+		drawBases(m.players);	
+		drawScores(m.players);
 	} else if(m.action == 'drawFire') {
 		drawFire(m.path,m.time,m.baseX,m.baseY,m.fireX,m.fireY,m.SPLASH_RADIUS);
 	} else if(m.action == 'score') {
+		// update all scores with players
+		drawScores(m.players);
 		removeMissile(missilesInFlight[m.missile.id]);
-		// XXX update player scores m.score = txt
-	}
 
+	}
 }
 
-function drawBase(commandxy) {
-    for(var i = 0; i<commandxy.length;i++) {
+function drawScores(players) {
+ for(var i=0;i<players.length;i++) {
+   $('.stats').html('<h3>Scores</h3>');
+   $('.stats').append('<div id="'+players[i].id+'">'+players[i].name+': '+ players[i].score + '</div>');
+ }
+}
+
+function drawBases(players) {
+    for(var i=0;i<players.length;i++) {
+		console.log(players[i]);
+		var player = players[i];
+		var commandxy = player.commandxy;
+		var id = player.id;
 		// Creates circle (base) at x, y, with radius 10
-  		var base = paper.circle(commandxy[i][0], commandxy[i][1], 10);
+  		var base = paper.circle(commandxy[0], commandxy[1], 10);
 		// Sets the fill attribute of the circle to red (#f00)
   		base.attr("fill", "#f0f");
 
   		// Sets the stroke attribute of the circle to white
   		base.attr("stroke", "#000");
+
 	}
 }
 

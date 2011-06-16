@@ -1,7 +1,7 @@
 // Coordinates for the base
 var BOARD_HEIGHT = 500;
 var BOARD_WIDTH = 700;
-var commandxy = [[350,BOARD_HEIGHT],[550,BOARD_HEIGHT],[200,BOARD_HEIGHT]];
+var commandxy = [[650,BOARD_HEIGHT],[350,BOARD_HEIGHT],[550,BOARD_HEIGHT],[200,BOARD_HEIGHT]];
 var SPLASH_RADIUS = 20;
 var ATTACK_SPEED = 6500;
 var LEVEL_CHANGE = 0.95;
@@ -40,10 +40,10 @@ function levelUp() {
 
 function fire(from,loc) {
    var c = clients[from]; 
-	if(c && c.missileCount < 2) {
-      c.missileCount++
+	if(c && c.player.missileCount < 2) {
+      c.player.missileCount++
 
-	var mDist = dist(c.commandxy,[loc.x,loc.y]);
+	var mDist = dist(c.player.commandxy,[loc.x,loc.y]);
       
 	// set the time in air of the missile based
 	// on how far it will go.
@@ -51,13 +51,13 @@ function fire(from,loc) {
    setTimeout(function() {
     // detect hit 
 	detectHit(c,loc.x,loc.y,SPLASH_RADIUS);
-  	c.missileCount--;
+  	c.player.missileCount--;
    },missileTimeInAir);
     
-	var path = "M" + c.commandxy[0] + " " + c.commandxy[1] + "L"+ loc.x + " " + loc.y;
+	var path = "M" + c.player.commandxy[0] + " " + c.player.commandxy[1] + "L"+ loc.x + " " + loc.y;
 	
-	sendToClients({action:'drawFire',fireX:loc.x,fireY:loc.y,SPLASH_RADIUS:SPLASH_RADIUS,baseX:c.commandxy[0],baseY:c.commandxy[1],time:missileTimeInAir,path:path});
-    c.shots++;
+	sendToClients({action:'drawFire',fireX:loc.x,fireY:loc.y,SPLASH_RADIUS:SPLASH_RADIUS,baseX:c.player.commandxy[0],baseY:c.player.commandxy[1],time:missileTimeInAir,path:path});
+    c.player.shots++;
    }
 
 }
@@ -100,7 +100,7 @@ function dist(pt1,pt2) {
 // did we get pwn'd?
 function detectBaseHit(x,y,r) {
 	for(var k in clients) {
-		var command = clients[k].commandxy;
+		var command = clients[k].player.commandxy;
    		var baseHit = ptWithin([x,y],command,r);
 		if(baseHit) {
 			console.log(baseHit);	
@@ -135,8 +135,8 @@ function detectHit(client,x,y,r) {
 
        if(within) {
           hitsThisLevel++;
-          client.score += Math.floor(SCORE_PER_MISSILE);
-          sendToClients({action:'score',missile:m,id:client.id,score:"Score: " + client.score});
+          client.player.score += Math.floor(SCORE_PER_MISSILE);
+          sendToClients({action:'score',missile:m,players:players});
 		  missilesInFlight[i] = null;
 		  delete missilesInFlight[i];
        }
@@ -171,6 +171,8 @@ function getCommand() {
 	return commandxy.pop();
 }
 
+var players = [];
+
 module.exports = {
 	start: function(client) {
 	var id = client.sessionId;
@@ -178,19 +180,23 @@ module.exports = {
 		attackInterval = setInterval( function() { doAttack(); } ,3000 );
 	} 
 	if(!clients[id]) {
-		client.commandxy = getCommand();
+		client.player = {};	
+		client.player.commandxy = getCommand();
 	    // XXX add not playing message	
 		if(this.activeBase) {
-			this.activeBase.push(client.commandxy);
+			this.activeBase.id = client.commandxy;
 		} else {
-			this.activeBase = [client.commandxy];
+		    this.activeBase = {};
+			this.activeBase[id] = client.commandxy;
 		}
-
-		client.send({action:'drawBase',commandxy:this.activeBase});
-		client.score = 0;
-		client.missileCount = 0;
-		client.shots = 0;
+		client.player.score = 0;
+		client.player.missileCount = 0;
+		client.player.shots = 0;
+		client.player.id = id;
+		client.player.name = 'Player ' + players.length;
 		clients[id] = client;	
+		players.push(client.player);
+		sendToClients({action:'drawBase',id:id,players:players});
 	} else {
 		client.send({action:'playing'});
 	}
