@@ -1,12 +1,13 @@
 var socket = new io.Socket();
 var BOARD_HEIGHT = 500;
 var BOARD_WIDTH = 700;
-var commandxy = [350,BOARD_HEIGHT];
 var paper;
 
 function onMessage(m) {
 	if(m.action == 'missile') {
 		drawAttack(paper,m);
+	} else if(m.action == 'drawBase') {
+		drawBase(m.commandxy);	
 	} else if(m.action == 'drawFire') {
 		drawFire(m.path,m.time,m.baseX,m.baseY,m.fireX,m.fireY,m.SPLASH_RADIUS);
 	} else if(m.action == 'score') {
@@ -16,11 +17,7 @@ function onMessage(m) {
 
 }
 
-var start = function () {
-	socket.connect();  
-	socket.on('message',onMessage);
-	
-  	paper = Raphael("canvas",BOARD_WIDTH,BOARD_HEIGHT);
+function drawBase(commandxy) {
 
 	// Creates circle (base) at x, y, with radius 10
   	var base = paper.circle(commandxy[0], commandxy[1], 10);
@@ -29,6 +26,13 @@ var start = function () {
 
   	// Sets the stroke attribute of the circle to white
   	base.attr("stroke", "#000");
+
+}
+
+var start = function () {
+  	paper = Raphael("canvas",BOARD_WIDTH,BOARD_HEIGHT);
+	socket.connect();  
+	socket.on('message',onMessage);
 
   	$("#canvas").click( fire );
 
@@ -101,6 +105,7 @@ function doBadBoom(paper,x,y,SPLASH_RADIUS) {
            boom.animate({opacity: 0},400,function(){boom.remove();});
       });
 }
+
 var missilesInFlight = {};
 function drawAttack(paper,missile) {
 	

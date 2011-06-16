@@ -1,7 +1,7 @@
 // Coordinates for the base
 var BOARD_HEIGHT = 500;
 var BOARD_WIDTH = 700;
-var commandxy = [350,BOARD_HEIGHT];
+var commandxy = [[350,BOARD_HEIGHT],[550,BOARD_HEIGHT],[200,BOARD_HEIGHT]];
 var SPLASH_RADIUS = 20;
 var ATTACK_SPEED = 6500;
 var LEVEL_CHANGE = 0.95;
@@ -56,7 +56,7 @@ function fire(from,loc) {
     
 	var path = "M" + c.commandxy[0] + " " + c.commandxy[1] + "L"+ loc.x + " " + loc.y;
 	
-	c.send({action:'drawFire',fireX:loc.x,fireY:loc.y,SPLASH_RADIUS:SPLASH_RADIUS,baseX:c.commandxy[0],baseY:c.commandxy[1],time:missileTimeInAir,path:path});
+	sendToClients({action:'drawFire',fireX:loc.x,fireY:loc.y,SPLASH_RADIUS:SPLASH_RADIUS,baseX:c.commandxy[0],baseY:c.commandxy[1],time:missileTimeInAir,path:path});
     c.shots++;
    }
 
@@ -79,6 +79,11 @@ function doAttack() {
 	missilesInFlight[missileId] = startMissile;
 	startMissile.created = (new Date()).getTime();
 	
+    setTimeout(function() {
+    // detect hit 
+	detectBaseHit(randomBottom,BOARD_HEIGHT,SPLASH_RADIUS);
+    },ATTACK_SPEED);
+ 
 	sendToClients(startMissile);
 }
 
@@ -93,17 +98,25 @@ function dist(pt1,pt2) {
 }
 
 // did we get pwn'd?
-function detectBaseHit(c,x,y,r) {
-   var baseHit = ptWithin([x,y],c.commandxy,r);
-   if(baseHit) {
-      updateFromBaseHit(c.commandxy);
-   }
+function detectBaseHit(x,y,r) {
+	for(var k in clients) {
+		var command = clients[k].commandxy;
+   		var baseHit = ptWithin([x,y],command,r);
+		if(baseHit) {
+			console.log(baseHit);	
+			endGame(clients[k]);
+   	   		// updateFromBaseHit(c.commandxy);
+			// end game if no bases restart all default
+   		}
+
+	}
 }
 
 // if so end game
-function updateFromBaseHit(commandxy) {
-    stopInterval(attackInterval);
-    // window.location.reload();
+function endGame(client) {
+	// XXX if clients.size is 0 reset defaults
+    // stopInterval(attackInterval);
+	
 }
 
 function detectHit(client,x,y,r) {
@@ -154,6 +167,10 @@ function ptWithin(ptAt,originPt,r) {
    return distance <= r;
 }
 
+function getCommand() {
+	return commandxy.pop();
+}
+
 module.exports = {
 	start: function(client) {
 	var id = client.sessionId;
@@ -161,11 +178,14 @@ module.exports = {
 		attackInterval = setInterval( function() { doAttack(); } ,3000 );
 	} 
 	if(!clients[id]) {
-		client.commandxy = commandxy;
+		client.commandxy = getCommand();
+		client.send({action:'drawBase',commandxy:client.commandxy});
 		client.score = 0;
 		client.missileCount = 0;
 		client.shots = 0;
 		clients[id] = client;	
+	} else {
+		client.send({action:'playing'});
 	}
    },
    fire: fire,

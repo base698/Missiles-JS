@@ -13,9 +13,7 @@ start = (client)->
 
 socket.on 'connection', (client) ->
 	client.on 'message', (m) ->
-		console.log arguments
 		if m.action == 'start' then start(client)
 		if m.action == 'removeMissile' then engine.removeMissile(m)
 		if m.action == 'fire' then engine.fire(client.sessionId,m)
-		if m.action == 'score' then console.log m
 
