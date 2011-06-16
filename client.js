@@ -12,17 +12,17 @@ function onMessage(m) {
 	} else if(m.action == 'drawFire') {
 		drawFire(m.path,m.time,m.baseX,m.baseY,m.fireX,m.fireY,m.SPLASH_RADIUS);
 	} else if(m.action == 'score') {
-		console.log(m);
 		// update all scores with players
 		drawScores(m.players);
 		removeMissile(missilesInFlight[m.missile.id]);
-
+	} else if(m.action == 'level') {
+		$('#level').html('Level: '+m.level);
 	}
 }
 
 function drawScores(players) {
- for(var i=0;i<players.length;i++) {
    $('.stats').html('<h3>Scores</h3>');
+ for(var i=0;i<players.length;i++) {
    $('.stats').append('<div id="'+players[i].id+'">'+players[i].name+': '+ players[i].score + '</div>');
  }
 }

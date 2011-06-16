@@ -32,9 +32,9 @@ function levelUp() {
   MISSILE_PER_LEVEL = MISSILE_PER_LEVEL * 1.05;
   SCORE_PER_MISSILE = SCORE_PER_MISSILE * 1.05;
   // XXX Increase target precision as well.
-  attackInterval = setInterval(function(){doAttack(paper);},MISSILE_FREQUENCY);
+  attackInterval = setInterval(function(){doAttack();},MISSILE_FREQUENCY);
   level++;
-  $("#level").text("Level: " + level);
+  sendToClients({action: 'level',level:level});
 }
 
 
