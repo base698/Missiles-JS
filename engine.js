@@ -179,7 +179,14 @@ module.exports = {
 	} 
 	if(!clients[id]) {
 		client.commandxy = getCommand();
-		client.send({action:'drawBase',commandxy:client.commandxy});
+	    // XXX add not playing message	
+		if(this.activeBase) {
+			this.activeBase.push(client.commandxy);
+		} else {
+			this.activeBase = [client.commandxy];
+		}
+
+		client.send({action:'drawBase',commandxy:this.activeBase});
 		client.score = 0;
 		client.missileCount = 0;
 		client.shots = 0;

@@ -3,10 +3,12 @@ var BOARD_HEIGHT = 500;
 var BOARD_WIDTH = 700;
 var paper;
 
+
 function onMessage(m) {
 	if(m.action == 'missile') {
 		drawAttack(paper,m);
 	} else if(m.action == 'drawBase') {
+		console.log(m);
 		drawBase(m.commandxy);	
 	} else if(m.action == 'drawFire') {
 		drawFire(m.path,m.time,m.baseX,m.baseY,m.fireX,m.fireY,m.SPLASH_RADIUS);
@@ -18,15 +20,15 @@ function onMessage(m) {
 }
 
 function drawBase(commandxy) {
+    for(var i = 0; i<commandxy.length;i++) {
+		// Creates circle (base) at x, y, with radius 10
+  		var base = paper.circle(commandxy[i][0], commandxy[i][1], 10);
+		// Sets the fill attribute of the circle to red (#f00)
+  		base.attr("fill", "#f0f");
 
-	// Creates circle (base) at x, y, with radius 10
-  	var base = paper.circle(commandxy[0], commandxy[1], 10);
-	// Sets the fill attribute of the circle to red (#f00)
-  	base.attr("fill", "#f0f");
-
-  	// Sets the stroke attribute of the circle to white
-  	base.attr("stroke", "#000");
-
+  		// Sets the stroke attribute of the circle to white
+  		base.attr("stroke", "#000");
+	}
 }
 
 var start = function () {
