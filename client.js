@@ -7,12 +7,12 @@ function onMessage(m) {
 	if(m.action == 'missile') {
 		drawAttack(paper,m);
 	} else if(m.action == 'drawBase') {
-		console.log(m);
 		drawBases(m.players);	
 		drawScores(m.players);
 	} else if(m.action == 'drawFire') {
 		drawFire(m.path,m.time,m.baseX,m.baseY,m.fireX,m.fireY,m.SPLASH_RADIUS);
 	} else if(m.action == 'score') {
+		console.log(m);
 		// update all scores with players
 		drawScores(m.players);
 		removeMissile(missilesInFlight[m.missile.id]);
