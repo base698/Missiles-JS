@@ -17,13 +17,24 @@ function onMessage(m) {
 		removeMissile(missilesInFlight[m.missile.id]);
 	} else if(m.action == 'level') {
 		$('#level').html('Level: '+m.level);
+	} else if(m.action == 'name') {
+		drawScores(m.players);
+	} else if(m.action == 'dead') {
+		drawScores(m.players);
+		// XXX destroy base on screen
 	}
 }
 
 function drawScores(players) {
    $('.stats').html('<h3>Scores</h3>');
  for(var i=0;i<players.length;i++) {
-   $('.stats').append('<div id="'+players[i].id+'">'+players[i].name+': '+ players[i].score + '</div>');
+   var player = players[i];
+   console.log(player);
+   if(player.dead) {
+   	$('.stats').append('<div class="red" id="'+players[i].id+'">'+players[i].name+': '+ players[i].score + '</div>');
+   } else {
+   	$('.stats').append('<div id="'+players[i].id+'">'+players[i].name+': '+ players[i].score + '</div>');
+   }
  }
 }
 
@@ -52,6 +63,12 @@ var start = function () {
   	$("#canvas").click( fire );
 
   	$("#play").click( startGame );
+	$("#name").change(function(e) {
+		console.log($(this).val());
+		console.log($(this).attr('playerId'));
+		//socket.send({action:'name',id:$(this).attr('playerId'),name:$(this).val()});
+	});
+	
   	// This starts the flood of missiles.
 
 };

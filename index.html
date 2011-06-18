@@ -13,7 +13,9 @@ body div input {  }
 #canvas { background-color: #EEE; width: 800px; height 600px;  }
 .stats { font-family: arial; color: #000; font-weight: 18px; padding: 2px 2px 2px 2px; float: left; margin: 0 auto; }
 div.multi { float: right; }
+.red { color: red; }
 </style>
+
 
 <script src="/jquery-min.js"></script>
 <script src="/raphael-min.js" type="text/javascript"></script>
@@ -27,11 +29,11 @@ $(document).ready(start);
 </head>
 <body>
 	<div class="stats">
-      <h3>scores</h3>
+      <h3>Scores</h3>
 		<div id="score">score: 0</div>
 	</div>
    <div class="game">
-   <input type="text" value="Player"><button id="play">Play</button>
+   <input id="name" type="text" value="Player"><button id="play">Play</button>
 	<span id="level">Level: 1</span><br>
 	<div id="canvas"></div>
    </div>

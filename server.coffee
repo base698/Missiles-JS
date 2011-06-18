@@ -9,6 +9,7 @@ app.listen 1337
 socket = io.listen app
 
 start = (client)->
+	engine.setSocket(socket)
 	engine.start(client)
 
 socket.on 'connection', (client) ->
@@ -16,4 +17,4 @@ socket.on 'connection', (client) ->
 		if m.action == 'start' then start(client)
 		if m.action == 'removeMissile' then engine.removeMissile(m)
 		if m.action == 'fire' then engine.fire(client.sessionId,m)
-
+		if m.action == 'name' then engine.name(m)

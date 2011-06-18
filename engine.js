@@ -19,11 +19,6 @@ var attackInterval;
 var Missle = {};
 var clients = {};
 
-function sendToClients(m) {
-	for( var k in clients ) {
-		clients[k].send(m);
-	}
-}
 // on level up adjust the missile frequency
 function levelUp() {
   clearInterval(attackInterval);
@@ -34,13 +29,13 @@ function levelUp() {
   // XXX Increase target precision as well.
   attackInterval = setInterval(function(){doAttack();},MISSILE_FREQUENCY);
   level++;
-  sendToClients({action: 'level',level:level});
+  socket.broadcast({action: 'level',level:level});
 }
 
 
 function fire(from,loc) {
    var c = clients[from]; 
-	if(c && c.player.missileCount < 2) {
+	if(c && !c.player.dead && c.player.missileCount < 2) {
       c.player.missileCount++
 
 	var mDist = dist(c.player.commandxy,[loc.x,loc.y]);
@@ -56,7 +51,7 @@ function fire(from,loc) {
     
 	var path = "M" + c.player.commandxy[0] + " " + c.player.commandxy[1] + "L"+ loc.x + " " + loc.y;
 	
-	sendToClients({action:'drawFire',fireX:loc.x,fireY:loc.y,SPLASH_RADIUS:SPLASH_RADIUS,baseX:c.player.commandxy[0],baseY:c.player.commandxy[1],time:missileTimeInAir,path:path});
+	socket.broadcast({action:'drawFire',fireX:loc.x,fireY:loc.y,SPLASH_RADIUS:SPLASH_RADIUS,baseX:c.player.commandxy[0],baseY:c.player.commandxy[1],time:missileTimeInAir,path:path});
     c.player.shots++;
    }
 
@@ -84,7 +79,7 @@ function doAttack() {
 	detectBaseHit(randomBottom,BOARD_HEIGHT,SPLASH_RADIUS);
     },ATTACK_SPEED);
  
-	sendToClients(startMissile);
+	socket.broadcast(startMissile);
 }
 
 // distance function between 2 points
@@ -103,7 +98,6 @@ function detectBaseHit(x,y,r) {
 		var command = clients[k].player.commandxy;
    		var baseHit = ptWithin([x,y],command,r);
 		if(baseHit) {
-			console.log(baseHit);	
 			endGame(clients[k]);
    	   		// updateFromBaseHit(c.commandxy);
 			// end game if no bases restart all default
@@ -116,6 +110,8 @@ function detectBaseHit(x,y,r) {
 function endGame(client) {
 	// XXX if clients.size is 0 reset defaults
     // stopInterval(attackInterval);
+	client.player.dead = true;
+	socket.broadcast({action:'dead',players:players});
 	
 }
 
@@ -136,7 +132,7 @@ function detectHit(client,x,y,r) {
        if(within) {
           hitsThisLevel++;
           client.player.score += Math.floor(SCORE_PER_MISSILE);
-          sendToClients({action:'score',missile:m,players:players});
+          socket.broadcast({action:'score',missile:m,players:players});
 		  missilesInFlight[i] = null;
 		  delete missilesInFlight[i];
        }
@@ -172,8 +168,9 @@ function getCommand() {
 }
 
 var players = [];
+var socket;
 
-module.exports = {
+var engine = module.exports = {
 	start: function(client) {
 	var id = client.sessionId;
 	if(attackInterval == undefined) {
@@ -196,13 +193,19 @@ module.exports = {
 		client.player.name = 'Player ' + players.length;
 		clients[id] = client;	
 		players.push(client.player);
-		sendToClients({action:'drawBase',id:id,players:players});
+		socket.broadcast({action:'drawBase',id:id,players:players});
 	} else {
 		client.send({action:'playing'});
 	}
    },
    fire: fire,
+   name: function(m) {
+		clients[m.id].player.name = m.name;	
+   },
    removeMissile: function(m) {
-		console.log(m);	
+		console.log('removeMissile');
+   },
+   setSocket: function(s) {
+		socket = s;
    }
 }
