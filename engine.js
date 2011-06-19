@@ -36,6 +36,7 @@ function levelUp() {
 function fire(from,loc) {
    var c = clients[from]; 
 	if(c && !c.player.dead && c.player.missileCount < 2) {
+
       c.player.missileCount++
 
 	var mDist = dist(c.player.commandxy,[loc.x,loc.y]);
@@ -73,10 +74,12 @@ function doAttack() {
 	var missileId = startMissile.id;
 	missilesInFlight[missileId] = startMissile;
 	startMissile.created = (new Date()).getTime();
-	
+    startMissile.destroyed = false;	
     setTimeout(function() {
     // detect hit 
-	detectBaseHit(randomBottom,BOARD_HEIGHT,SPLASH_RADIUS);
+	if(!startMissile.destroyed) 
+		detectBaseHit(randomBottom,BOARD_HEIGHT,SPLASH_RADIUS);
+	delete missilesInFlight[missileId];
     },ATTACK_SPEED);
  
 	socket.broadcast(startMissile);
@@ -99,8 +102,6 @@ function detectBaseHit(x,y,r) {
    		var baseHit = ptWithin([x,y],command,r);
 		if(baseHit) {
 			endGame(clients[k]);
-   	   		// updateFromBaseHit(c.commandxy);
-			// end game if no bases restart all default
    		}
 
 	}
@@ -133,8 +134,7 @@ function detectHit(client,x,y,r) {
           hitsThisLevel++;
           client.player.score += Math.floor(SCORE_PER_MISSILE);
           socket.broadcast({action:'score',missile:m,players:players});
-		  missilesInFlight[i] = null;
-		  delete missilesInFlight[i];
+		  missilesInFlight[i].destroyed = true;
        }
     }
     // level up condition
@@ -164,7 +164,10 @@ function ptWithin(ptAt,originPt,r) {
 }
 
 function getCommand() {
-	return commandxy.pop();
+    if(commandxy.length == 0) 
+	 return false;
+	else 
+	 return commandxy.pop();
 }
 
 var players = [];
@@ -179,6 +182,10 @@ var engine = module.exports = {
 	if(!clients[id]) {
 		client.player = {};	
 		client.player.commandxy = getCommand();
+		if(!client.player.commandxy) {
+			client.send({action:'max'});
+			return;
+		}
 	    // XXX add not playing message	
 		if(this.activeBase) {
 			this.activeBase.id = client.commandxy;

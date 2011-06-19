@@ -22,6 +22,8 @@ function onMessage(m) {
 	} else if(m.action == 'dead') {
 		drawScores(m.players);
 		// XXX destroy base on screen
+	} else if(m.action == 'max') {
+		$('#level').html('Max players already in game.');	
 	}
 }
 
@@ -138,14 +140,14 @@ function doBadBoom(paper,x,y,SPLASH_RADIUS) {
 
 var missilesInFlight = {};
 function drawAttack(paper,missile) {
-	var start = missile.startPt;
-	var end = missile.endPt;
-	var startMissile = paper.image('missile.png',start[0],start[1],40,20); 
+	var start = [missile.startPt[0]-10,missile.startPt[1]];
+	var end = [missile.endPt[0]-10,missile.endPt[1]];
+	
+	var startMissile = paper.image('missile.png',start[0],start[1],30,15); 
 	
 	// Calculate rotation
 	var radians = Math.atan((end[0]-start[0])/(end[1]-start[1]));
 	var theta = radians *  180 / Math.PI;
-	console.log(theta);
 	startMissile = startMissile.rotate(-90).rotate(-theta);
 	// do animation
 	
