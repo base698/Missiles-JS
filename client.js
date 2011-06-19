@@ -29,7 +29,6 @@ function drawScores(players) {
    $('.stats').html('<h3>Scores</h3>');
  for(var i=0;i<players.length;i++) {
    var player = players[i];
-   console.log(player);
    if(player.dead) {
    	$('.stats').append('<div class="red" id="'+players[i].id+'">'+players[i].name+': '+ players[i].score + '</div>');
    } else {
@@ -40,12 +39,11 @@ function drawScores(players) {
 
 function drawBases(players) {
     for(var i=0;i<players.length;i++) {
-		console.log(players[i]);
 		var player = players[i];
 		var commandxy = player.commandxy;
 		var id = player.id;
 		// Creates circle (base) at x, y, with radius 10
-  		var base = paper.circle(commandxy[0], commandxy[1], 10);
+  		var base = paper.image('base.svg',commandxy[0]-15, commandxy[1]-25, 40,50);
 		// Sets the fill attribute of the circle to red (#f00)
   		base.attr("fill", "#f0f");
 
@@ -140,11 +138,21 @@ function doBadBoom(paper,x,y,SPLASH_RADIUS) {
 
 var missilesInFlight = {};
 function drawAttack(paper,missile) {
+	var start = missile.startPt;
+	var end = missile.endPt;
+	var startMissile = paper.image('missile.png',start[0],start[1],40,20); 
 	
-	var startMissile = paper.path("M " + missile.t + " 2" );
-	startMissile.attr("width","3").attr("missileId",startMissile.id).animate( 
+	// Calculate rotation
+	var radians = Math.atan((end[0]-start[0])/(end[1]-start[1]));
+	var theta = radians *  180 / Math.PI;
+	console.log(theta);
+	startMissile = startMissile.rotate(-90).rotate(-theta);
+	// do animation
+	
+	startMissile.attr("missileId",startMissile.id).animate( 
 		{ 
-        path: "M" + missile.t + " 2 L" + missile.b + " " + BOARD_HEIGHT 
+        x: end[0],
+		y: end[1] 
       },                                                                
      missile.ATTACK_SPEED,
      function() { 
@@ -152,6 +160,7 @@ function drawAttack(paper,missile) {
 		  removeMissile(startMissile);
           doBadBoom(paper,missile.b,BOARD_HEIGHT,missile.SPLASH_RADIUS); 
 	});
+	
 	missilesInFlight[missile.id] = startMissile;
 
 }

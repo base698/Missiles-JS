@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
+"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<!-- Created with Sodipodi ("http://www.sodipodi.com/") -->
+<svg
+   id="svg574"
+   sodipodi:version="0.33"
+   width="32"
+   height="32"
+   sodipodi:docname="/home/kenny/ent/wiki/Building_icon.svg"
+   sodipodi:docbase="/home/kenny/ent/wiki/"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs
+     id="defs576">
+    <linearGradient
+       id="linearGradient573">
+      <stop
+         style="stop-color:#000000;stop-opacity:1.0000;"
+         offset="0"
+         id="stop574" />
+      <stop
+         style="stop-color:#f5f5ff;stop-opacity:1.0000;"
+         offset="1"
+         id="stop575" />
+    </linearGradient>
+    <linearGradient
+       xlink:href="#linearGradient573"
+       id="linearGradient576"
+       x1="7.142859e-2"
+       y1="0.968750"
+       x2="5.102039e-2"
+       y2="7.812500e-3" />
+  </defs>
+  <sodipodi:namedview
+     id="base" />
+  <rect
+     style="font-size:12.000;fill:url(#linearGradient576);fill-rule:evenodd;stroke-width:1;"
+     id="rect572"
+     width="23.2911377"
+     height="30.4810123"
+     x="4.45569611"
+     y="1.21519041" />
+  <rect
+     style="font-size:12.000;fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.979346;"
+     id="rect562"
+     width="25.41773"
+     height="30.88608"
+     x="3.645571"
+     y="0.607592" />
+  <rect
+     style="font-size:12.000;fill:#808080;fill-rule:evenodd;stroke-width:1;"
+     id="rect577"
+     width="0"
+     height="0.30379772"
+     x="14.6835442"
+     y="1.92404938" />
+  <rect
+     style="font-size:12.000;fill:#b06f5b;fill-rule:evenodd;"
+     id="rect563"
+     width="2.430380"
+     height="30.88928"
+     x="3.949368"
+     y="1.009450" />
+  <rect
+     style="font-size:12.000;fill:#b06f5b;fill-rule:evenodd;"
+     id="rect564"
+     width="2.531647"
+     height="30.79121"
+     x="11.13923"
+     y="0.911387" />
+  <rect
+     style="font-size:12.000;fill:#b06f5b;fill-rule:evenodd;"
+     id="rect565"
+     width="3.139243"
+     height="30.49703"
+     x="18.22784"
+     y="1.107509" />
+  <rect
+     style="font-size:12.000;fill:#b06f5b;fill-rule:evenodd;"
+     id="rect566"
+     width="3.037975"
+     height="30.69315"
+     x="25.92405"
+     y="0.911387" />
+  <rect
+     style="font-size:12.000;fill:#b06f5b;fill-rule:evenodd;"
+     id="rect567"
+     width="23.39241"
+     height="3.037978"
+     x="4.151898"
+     y="0.911388" />
+  <rect
+     style="font-size:12.000;fill:#b06f5b;fill-rule:evenodd;"
+     id="rect568"
+     width="23.39241"
+     height="3.341773"
+     x="3.949368"
+     y="6.683538" />
+  <rect
+     style="font-size:12.000;fill:#b06f5b;fill-rule:evenodd;"
+     id="rect569"
+     width="23.39241"
+     height="3.341773"
+     x="4.151900"
+     y="12.75949" />
+  <rect
+     style="font-size:12.000;fill:#b06f5b;fill-rule:evenodd;"
+     id="rect570"
+     width="23.39241"
+     height="3.341773"
+     x="4.455698"
+     y="18.83542" />
+  <rect
+     style="font-size:12.000;fill:#b06f5b;fill-rule:evenodd;"
+     id="rect571"
+     width="23.39241"
+     height="3.341773"
+     x="5.063293"
+     y="25.41771" />
+  <rect
+     style="font-size:12.000;fill:#b2a486;fill-rule:evenodd;stroke-width:1;fill-opacity:1.0000;"
+     id="rect578"
+     width="8.101267"
+     height="5.974682"
+     x="12.05063"
+     y="25.82279" />
+  <rect
+     style="font-size:12.000;fill:#585858;fill-rule:evenodd;stroke-width:1;fill-opacity:1.0000;"
+     id="rect579"
+     width="5.26582241"
+     height="4.05063248"
+     x="13.5696211"
+     y="27.7468357" />
+</svg>
