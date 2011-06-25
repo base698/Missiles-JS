@@ -1,10 +1,14 @@
 // Coordinates for the base
 var BOARD_HEIGHT = 500;
 var BOARD_WIDTH = 700;
-var commandxy = [[650,BOARD_HEIGHT],[350,BOARD_HEIGHT],[550,BOARD_HEIGHT],[200,BOARD_HEIGHT]];
+var available_bases = [
+	[650,BOARD_HEIGHT],
+	[350,BOARD_HEIGHT],
+	[550,BOARD_HEIGHT],
+	[200,BOARD_HEIGHT]];
 var SPLASH_RADIUS = 20;
 var ATTACK_SPEED = 6500;
-var LEVEL_CHANGE = 0.95;
+var LEVEL_CHANGE = 0.90;
 var MISSILE_FREQUENCY = 3000;
 var TARGET_RANGE = BOARD_WIDTH;
 var MISSILE_PER_LEVEL = 10;
@@ -29,7 +33,7 @@ function levelUp() {
   // XXX Increase target precision as well.
   attackInterval = setInterval(function(){doAttack();},MISSILE_FREQUENCY);
   level++;
-  socket.sockets.emit('message',{action: 'level',level:level});
+  clientInterface('message',{action: 'level',level:level});
 }
 
 
@@ -52,7 +56,17 @@ function fire(from,loc) {
     
 	var path = "M" + c.player.commandxy[0] + " " + c.player.commandxy[1] + "L"+ loc.x + " " + loc.y;
 	
-	socket.sockets.emit('message',{action:'drawFire',fireX:loc.x,fireY:loc.y,SPLASH_RADIUS:SPLASH_RADIUS,baseX:c.player.commandxy[0],baseY:c.player.commandxy[1],time:missileTimeInAir,path:path});
+	clientInterface('message',
+		{
+			action:'drawFire',
+			fireX:loc.x,
+			fireY:loc.y,
+			SPLASH_RADIUS:SPLASH_RADIUS,
+			baseX:c.player.commandxy[0],
+			baseY:c.player.commandxy[1],
+			time:missileTimeInAir,
+			path:path
+		});
     c.player.shots++;
    }
 
@@ -67,7 +81,7 @@ function getId() {
 function doAttack() {
 	var randomTop = Math.floor(Math.random()*BOARD_WIDTH);
 	var randomBottom = Math.floor(Math.random()*BOARD_WIDTH);
-	var startMissile = {SPLASH_RADIUS:SPLASH_RADIUS,id:getId(),action:'missile',ATTACK_SPEED:ATTACK_SPEED,t:randomTop,b:randomBottom};
+	var startMissile = {SPLASH_RADIUS:SPLASH_RADIUS,id:getId(),ATTACK_SPEED:ATTACK_SPEED,t:randomTop,b:randomBottom};
 	startMissile.startPt = [randomTop,2];
 	startMissile.endPt = [randomBottom,BOARD_HEIGHT];
 	
@@ -82,7 +96,7 @@ function doAttack() {
 	delete missilesInFlight[missileId];
     },ATTACK_SPEED);
  
-	socket.sockets.emit('message',startMissile);
+	clientInterface('missile',startMissile);
 }
 
 // distance function between 2 points
@@ -112,7 +126,7 @@ function endGame(client) {
 	// XXX if clients.size is 0 reset defaults
     // stopInterval(attackInterval);
 	client.player.dead = true;
-	socket.sockets.emit('message',{action:'dead',players:players});
+	clientInterface('message',{action:'dead',players:players});
 	
 }
 
@@ -133,7 +147,7 @@ function detectHit(client,x,y,r) {
        if(within) {
           hitsThisLevel++;
           client.player.score += Math.floor(SCORE_PER_MISSILE);
-          socket.sockets.emit('message',{action:'score',missile:m,players:players});
+          clientInterface('message',{action:'score',missile:m,players:players});
 		  missilesInFlight[i].destroyed = true;
        }
     }
@@ -164,55 +178,59 @@ function ptWithin(ptAt,originPt,r) {
 }
 
 function getCommand() {
-    if(commandxy.length == 0) 
+    if(available_bases.length == 0) 
 	 return false;
 	else 
-	 return commandxy.pop();
+	 return available_bases.pop();
 }
 
 var players = [];
-var socket;
+var clientInterface;
 
 var engine = module.exports = {
-	start: function(client) {
-	var id = client.id;
-	if(attackInterval == undefined) {
-		attackInterval = setInterval( function() { doAttack(); } ,3000 );
-	} 
-	if(!clients[id]) {
-		client.player = {};	
-		client.player.commandxy = getCommand();
-		if(!client.player.commandxy) {
-			client.emit('message',{action:'max'});
-			return;
-		}
-	    // XXX add not playing message	
-		if(this.activeBase) {
-			this.activeBase.id = client.commandxy;
+ instance: function() {
+    console.log('test');
+	this.start = function(client) {
+		var id = client.id;
+		if(attackInterval == undefined) {
+			attackInterval = setInterval( function() { doAttack(); } ,3000 );
+		} 
+		if(!clients[id]) {
+			client.player = {};	
+			client.player.commandxy = getCommand();
+			if(!client.player.commandxy) {
+				client.emit('message',{action:'max'});
+				return;
+			}
+		    // XXX add not playing message	
+			if(this.activeBase) {
+				this.activeBase.id = client.commandxy;
+			} else {
+		   		this.activeBase = {};
+				this.activeBase[id] = client.commandxy;
+			}
+			client.player.score = 0;
+			client.player.missileCount = 0;
+			client.player.shots = 0;
+			client.player.id = id;
+			client.player.name = 'Player ' + (players.length+1);
+			clients[id] = client;	
+			players.push(client.player);
+			clientInterface('message',{action:'drawBase',id:id,players:players});
 		} else {
-		    this.activeBase = {};
-			this.activeBase[id] = client.commandxy;
+			clientInterface('playing',{action:'playing'});
 		}
-		client.player.score = 0;
-		client.player.missileCount = 0;
-		client.player.shots = 0;
-		client.player.id = id;
-		client.player.name = 'Player ' + players.length;
-		clients[id] = client;	
-		players.push(client.player);
-		socket.sockets.emit('message',{action:'drawBase',id:id,players:players});
-	} else {
-		client.emit('message',{action:'playing'});
-	}
-   },
-   fire: fire,
-   name: function(m) {
+   };
+   this.fire = fire;
+   this.name = function(m) {
 		clients[m.id].player.name = m.name;	
-   },
-   removeMissile: function(m) {
+   };
+   removeMissile = function(m) {
 		console.log('removeMissile');
-   },
-   setSocket: function(s) {
-		socket = s;
-   }
+   };
+   this.setClientInterface = function(s) {
+		clientInterface = s;
+   };
+   return this;
+ }
 }

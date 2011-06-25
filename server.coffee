@@ -1,7 +1,7 @@
 io = require "socket.io"
 express = require('express')
 app = express.createServer()
-engine = require './engine'
+engine = new require('./engine').instance()
 
 oneYear = 1000*60*60*24
 app.use(express.static(__dirname, { maxAge: oneYear }))
@@ -9,7 +9,8 @@ io = io.listen app
 app.listen 1337
 
 start = (client)->
-	engine.setSocket(io)
+	engine.setClientInterface (type,msg) -> 
+		io.sockets.emit(type,msg)
 	engine.start(client)
 
 io.sockets.on 'connection', (client) ->

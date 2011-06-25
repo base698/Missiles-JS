@@ -3,10 +3,10 @@ var BOARD_HEIGHT = 500;
 var BOARD_WIDTH = 700;
 var paper;
 
+var serverInterface;
+
 function onMessage(m) {
-	if(m.action == 'missile') {
-		drawAttack(paper,m);
-	} else if(m.action == 'drawBase') {
+	if(m.action == 'drawBase') {
 		drawBases(m.players);	
 		drawScores(m.players);
 	} else if(m.action == 'drawFire') {
@@ -59,7 +59,10 @@ var start = function () {
   	paper = Raphael("canvas",BOARD_WIDTH,BOARD_HEIGHT);
 	socket = io.connect('http://localhost:1337/');  
 	socket.on('message',onMessage);
-
+	socket.on('missile',drawAttack);
+	serverInterface = function(type,msg) {
+		socket.emit(type,msg);
+	}
   	$("#canvas").click( fire );
 
   	$("#play").click( startGame );
@@ -74,7 +77,7 @@ var start = function () {
 
 function startGame() {
 	console.log('start');
-	socket.emit('message',{action:"start"});
+	serverInterface('message',{action:"start"});
 }
 
 // on level up adjust the missile frequency
@@ -102,7 +105,7 @@ function fire(e) {
         fireY = e.pageY-e.currentTarget.offsetTop;
       }
 
-	socket.emit('message',{action:'fire',x:fireX,y:fireY});
+	serverInterface('message',{action:'fire',x:fireX,y:fireY});
 }
 
 function drawFire(path,time,baseX,baseY,fireX,fireY,SPLASH_RADIUS) {
@@ -138,7 +141,7 @@ function doBadBoom(paper,x,y,SPLASH_RADIUS) {
 }
 
 var missilesInFlight = {};
-function drawAttack(paper,missile) {
+function drawAttack(missile) {
 	var start = [missile.startPt[0]-10,missile.startPt[1]];
 	var end = [missile.endPt[0]-10,missile.endPt[1]];
 	
@@ -157,7 +160,7 @@ function drawAttack(paper,missile) {
       },                                                                
      missile.ATTACK_SPEED,
      function() { 
-          socket.emit('removeMissile',missile);
+          serverInterface('removeMissile',missile);
 		  removeMissile(startMissile);
           doBadBoom(paper,missile.b,BOARD_HEIGHT,missile.SPLASH_RADIUS); 
 	});
