@@ -175,7 +175,7 @@ var socket;
 
 var engine = module.exports = {
 	start: function(client) {
-	var id = client.sessionId;
+	var id = client.id;
 	if(attackInterval == undefined) {
 		attackInterval = setInterval( function() { doAttack(); } ,3000 );
 	} 

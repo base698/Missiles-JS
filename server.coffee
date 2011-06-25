@@ -16,5 +16,5 @@ io.sockets.on 'connection', (client) ->
 	client.on 'message', (m) ->
 		if m.action == 'start' then start(client)
 		if m.action == 'removeMissile' then engine.removeMissile(m)
-		if m.action == 'fire' then engine.fire(client.sessionId,m)
+		if m.action == 'fire' then engine.fire(client.id,m)
 		if m.action == 'name' then engine.name(m)
