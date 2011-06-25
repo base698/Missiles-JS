@@ -5,8 +5,10 @@ var paper;
 
 var serverInterface;
 
-function onMessage(m) {
-	if(m.action == 'drawBase') {
+function onMessage(type,m) {
+    if(type == 'missile') {
+		drawAttack(m);
+	} else if(m.action == 'drawBase') {
 		drawBases(m.players);	
 		drawScores(m.players);
 	} else if(m.action == 'drawFire') {
@@ -14,7 +16,7 @@ function onMessage(m) {
 	} else if(m.action == 'score') {
 		// update all scores with players
 		drawScores(m.players);
-		removeMissile(missilesInFlight[m.missile.id]);
+		removeMissile(m.missile.id);
 	} else if(m.action == 'level') {
 		$('#level').html('Level: '+m.level);
 	} else if(m.action == 'name') {
@@ -55,13 +57,22 @@ function drawBases(players) {
 	}
 }
 
+var gameEngine = new engine.instance();
+
+gameEngine.setClientInterface(function(type,msg) {
+	onMessage(type,msg);
+});
+
 var start = function () {
   	paper = Raphael("canvas",BOARD_WIDTH,BOARD_HEIGHT);
-	socket = io.connect('http://localhost:1337/');  
-	socket.on('message',onMessage);
-	socket.on('missile',drawAttack);
+	
 	serverInterface = function(type,msg) {
-		socket.emit(type,msg);
+	  if(msg.action == 'start') gameEngine.start({id:1});
+	  if(msg.action == 'removeMissile') {
+	  	gameEngine.removeMissile(msg);
+	  }
+	  if(msg.action == 'fire') gameEngine.fire(1,msg);
+	  if(msg.action == 'name') gameEngine.name(msg);
 	}
   	$("#canvas").click( fire );
 
@@ -71,12 +82,9 @@ var start = function () {
 		console.log($(this).attr('playerId'));
 	});
 	
-  	// This starts the flood of missiles.
-
 };
 
 function startGame() {
-	console.log('start');
 	serverInterface('message',{action:"start"});
 }
 
@@ -140,7 +148,7 @@ function doBadBoom(paper,x,y,SPLASH_RADIUS) {
       });
 }
 
-var missilesInFlight = {};
+var clientMissilesInFlight = {};
 function drawAttack(missile) {
 	var start = [missile.startPt[0]-10,missile.startPt[1]];
 	var end = [missile.endPt[0]-10,missile.endPt[1]];
@@ -161,19 +169,19 @@ function drawAttack(missile) {
      missile.ATTACK_SPEED,
      function() { 
           serverInterface('removeMissile',missile);
-		  removeMissile(startMissile);
+		  removeMissile(missile.id);
           doBadBoom(paper,missile.b,BOARD_HEIGHT,missile.SPLASH_RADIUS); 
 	});
 	
-	missilesInFlight[missile.id] = startMissile;
+	clientMissilesInFlight[missile.id] = startMissile;
 
 }
 
 // this removes the missile on the screen
-function removeMissile(startMissile) {
-        startMissile.animate({opacity: 0},1600,
+function removeMissile(id) {
+        clientMissilesInFlight[id].animate({opacity: 0},1600,
            function() {
-             startMissile.remove();
+             clientMissilesInFlight[id].remove();
            });
 }
 

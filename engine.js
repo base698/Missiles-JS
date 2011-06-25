@@ -37,41 +37,6 @@ function levelUp() {
 }
 
 
-function fire(from,loc) {
-   var c = clients[from]; 
-	if(c && !c.player.dead && c.player.missileCount < 2) {
-
-      c.player.missileCount++
-
-	var mDist = dist(c.player.commandxy,[loc.x,loc.y]);
-      
-	// set the time in air of the missile based
-	// on how far it will go.
-	var missileTimeInAir = Math.floor(2000 * (mDist/BOARD_HEIGHT));
-   setTimeout(function() {
-    // detect hit 
-	detectHit(c,loc.x,loc.y,SPLASH_RADIUS);
-  	c.player.missileCount--;
-   },missileTimeInAir);
-    
-	var path = "M" + c.player.commandxy[0] + " " + c.player.commandxy[1] + "L"+ loc.x + " " + loc.y;
-	
-	clientInterface('message',
-		{
-			action:'drawFire',
-			fireX:loc.x,
-			fireY:loc.y,
-			SPLASH_RADIUS:SPLASH_RADIUS,
-			baseX:c.player.commandxy[0],
-			baseY:c.player.commandxy[1],
-			time:missileTimeInAir,
-			path:path
-		});
-    c.player.shots++;
-   }
-
-}
-
 var missileId = 0;
 function getId() {
    return missileId++;
@@ -95,7 +60,6 @@ function doAttack() {
 		detectBaseHit(randomBottom,BOARD_HEIGHT,SPLASH_RADIUS);
 	delete missilesInFlight[missileId];
     },ATTACK_SPEED);
- 
 	clientInterface('missile',startMissile);
 }
 
@@ -187,9 +151,8 @@ function getCommand() {
 var players = [];
 var clientInterface;
 
-var engine = module.exports = {
+var engine = {
  instance: function() {
-    console.log('test');
 	this.start = function(client) {
 		var id = client.id;
 		if(attackInterval == undefined) {
@@ -221,12 +184,46 @@ var engine = module.exports = {
 			clientInterface('playing',{action:'playing'});
 		}
    };
-   this.fire = fire;
+   this.fire = function (from,loc) {
+   var c = clients[from]; 
+	if(c && !c.player.dead && c.player.missileCount < 2) {
+
+      c.player.missileCount++
+
+	var mDist = dist(c.player.commandxy,[loc.x,loc.y]);
+      
+	// set the time in air of the missile based
+	// on how far it will go.
+	var missileTimeInAir = Math.floor(2000 * (mDist/BOARD_HEIGHT));
+   setTimeout(function() {
+    // detect hit 
+	detectHit(c,loc.x,loc.y,SPLASH_RADIUS);
+  	c.player.missileCount--;
+   },missileTimeInAir);
+    
+	var path = "M" + c.player.commandxy[0] + " " + c.player.commandxy[1] + "L"+ loc.x + " " + loc.y;
+	
+	clientInterface('message',
+		{
+			action:'drawFire',
+			fireX:loc.x,
+			fireY:loc.y,
+			SPLASH_RADIUS:SPLASH_RADIUS,
+			baseX:c.player.commandxy[0],
+			baseY:c.player.commandxy[1],
+			time:missileTimeInAir,
+			path:path
+		});
+    c.player.shots++;
+   }
+
+	};
+
    this.name = function(m) {
 		clients[m.id].player.name = m.name;	
    };
-   removeMissile = function(m) {
-		console.log('removeMissile');
+   this.removeMissile = function(m) {
+		delete missilesInFlight[m.id];
    };
    this.setClientInterface = function(s) {
 		clientInterface = s;
