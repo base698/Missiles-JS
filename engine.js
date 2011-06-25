@@ -46,7 +46,7 @@ function getId() {
 function doAttack() {
 	var randomTop = Math.floor(Math.random()*BOARD_WIDTH);
 	var randomBottom = Math.floor(Math.random()*BOARD_WIDTH);
-	var startMissile = {SPLASH_RADIUS:SPLASH_RADIUS,id:getId(),ATTACK_SPEED:ATTACK_SPEED,t:randomTop,b:randomBottom};
+	var startMissile = {action:'missile',SPLASH_RADIUS:SPLASH_RADIUS,id:getId(),ATTACK_SPEED:ATTACK_SPEED,t:randomTop,b:randomBottom};
 	startMissile.startPt = [randomTop,2];
 	startMissile.endPt = [randomBottom,BOARD_HEIGHT];
 	
@@ -60,7 +60,7 @@ function doAttack() {
 		detectBaseHit(randomBottom,BOARD_HEIGHT,SPLASH_RADIUS);
 	delete missilesInFlight[missileId];
     },ATTACK_SPEED);
-	clientInterface('missile',startMissile);
+	clientInterface('message',startMissile);
 }
 
 // distance function between 2 points

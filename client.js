@@ -5,8 +5,8 @@ var paper;
 
 var serverInterface;
 
-function onMessage(type,m) {
-    if(type == 'missile') {
+function onMessage(m) {
+    if(m.action == 'missile') {
 		drawAttack(m);
 	} else if(m.action == 'drawBase') {
 		drawBases(m.players);	
@@ -59,7 +59,7 @@ function drawBases(players) {
 
 var gameEngine = new engine.instance();
 
-gameEngine.setClientInterface(onMessage);
+gameEngine.setClientInterface(function(t,m){onMessage(m);});
 
 var start = function () {
   	paper = Raphael("canvas",BOARD_WIDTH,BOARD_HEIGHT);
