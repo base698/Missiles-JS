@@ -23,6 +23,19 @@ div.multi { float: right; }
 <script src="/client.js" type="text/javascript"></script>
 <script>
 
+var gameEngine = new engine.instance();
+
+gameEngine.setClientInterface(function(t,m){onMessage(m);});
+serverInterface = function(type,msg) {
+  if(msg.action == 'start') gameEngine.start({id:1});
+  if(msg.action == 'removeMissile') {
+  	gameEngine.removeMissile(msg);
+  }
+  if(msg.action == 'fire') gameEngine.fire(1,msg);
+  if(msg.action == 'name') gameEngine.name(msg);
+}
+
+
 $(document).ready(start);
 
 </script>

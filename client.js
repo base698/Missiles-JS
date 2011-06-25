@@ -57,21 +57,9 @@ function drawBases(players) {
 	}
 }
 
-var gameEngine = new engine.instance();
-
-gameEngine.setClientInterface(function(t,m){onMessage(m);});
-
 var start = function () {
   	paper = Raphael("canvas",BOARD_WIDTH,BOARD_HEIGHT);
 	
-	serverInterface = function(type,msg) {
-	  if(msg.action == 'start') gameEngine.start({id:1});
-	  if(msg.action == 'removeMissile') {
-	  	gameEngine.removeMissile(msg);
-	  }
-	  if(msg.action == 'fire') gameEngine.fire(1,msg);
-	  if(msg.action == 'name') gameEngine.name(msg);
-	}
   	$("#canvas").click( fire );
 
   	$("#play").click( startGame );
