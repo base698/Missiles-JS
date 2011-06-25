@@ -59,9 +59,7 @@ function drawBases(players) {
 
 var gameEngine = new engine.instance();
 
-gameEngine.setClientInterface(function(type,msg) {
-	onMessage(type,msg);
-});
+gameEngine.setClientInterface(onMessage);
 
 var start = function () {
   	paper = Raphael("canvas",BOARD_WIDTH,BOARD_HEIGHT);
