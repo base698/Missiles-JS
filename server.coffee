@@ -5,14 +5,14 @@ engine = require './engine'
 
 oneYear = 1000*60*60*24
 app.use(express.static(__dirname, { maxAge: oneYear }))
+io = io.listen app
 app.listen 1337
-socket = io.listen app
 
 start = (client)->
-	engine.setSocket(socket)
+	engine.setSocket(io)
 	engine.start(client)
 
-socket.on 'connection', (client) ->
+io.sockets.on 'connection', (client) ->
 	client.on 'message', (m) ->
 		if m.action == 'start' then start(client)
 		if m.action == 'removeMissile' then engine.removeMissile(m)

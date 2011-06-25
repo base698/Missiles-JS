@@ -1,4 +1,4 @@
-var socket = new io.Socket();
+var socket;
 var BOARD_HEIGHT = 500;
 var BOARD_WIDTH = 700;
 var paper;
@@ -57,7 +57,7 @@ function drawBases(players) {
 
 var start = function () {
   	paper = Raphael("canvas",BOARD_WIDTH,BOARD_HEIGHT);
-	socket.connect();  
+	socket = io.connect('http://localhost:1337/');  
 	socket.on('message',onMessage);
 
   	$("#canvas").click( fire );
@@ -66,7 +66,6 @@ var start = function () {
 	$("#name").change(function(e) {
 		console.log($(this).val());
 		console.log($(this).attr('playerId'));
-		//socket.send({action:'name',id:$(this).attr('playerId'),name:$(this).val()});
 	});
 	
   	// This starts the flood of missiles.
@@ -75,7 +74,7 @@ var start = function () {
 
 function startGame() {
 	console.log('start');
-	socket.send({action:"start"});
+	socket.emit('message',{action:"start"});
 }
 
 // on level up adjust the missile frequency
@@ -103,7 +102,7 @@ function fire(e) {
         fireY = e.pageY-e.currentTarget.offsetTop;
       }
 
-	socket.send({action:'fire',x:fireX,y:fireY});
+	socket.emit('message',{action:'fire',x:fireX,y:fireY});
 }
 
 function drawFire(path,time,baseX,baseY,fireX,fireY,SPLASH_RADIUS) {
@@ -158,7 +157,7 @@ function drawAttack(paper,missile) {
       },                                                                
      missile.ATTACK_SPEED,
      function() { 
-          socket.send('removeMissile',missile);
+          socket.emit('removeMissile',missile);
 		  removeMissile(startMissile);
           doBadBoom(paper,missile.b,BOARD_HEIGHT,missile.SPLASH_RADIUS); 
 	});

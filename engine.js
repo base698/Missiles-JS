@@ -29,7 +29,7 @@ function levelUp() {
   // XXX Increase target precision as well.
   attackInterval = setInterval(function(){doAttack();},MISSILE_FREQUENCY);
   level++;
-  socket.broadcast({action: 'level',level:level});
+  socket.sockets.emit('message',{action: 'level',level:level});
 }
 
 
@@ -52,7 +52,7 @@ function fire(from,loc) {
     
 	var path = "M" + c.player.commandxy[0] + " " + c.player.commandxy[1] + "L"+ loc.x + " " + loc.y;
 	
-	socket.broadcast({action:'drawFire',fireX:loc.x,fireY:loc.y,SPLASH_RADIUS:SPLASH_RADIUS,baseX:c.player.commandxy[0],baseY:c.player.commandxy[1],time:missileTimeInAir,path:path});
+	socket.sockets.emit('message',{action:'drawFire',fireX:loc.x,fireY:loc.y,SPLASH_RADIUS:SPLASH_RADIUS,baseX:c.player.commandxy[0],baseY:c.player.commandxy[1],time:missileTimeInAir,path:path});
     c.player.shots++;
    }
 
@@ -82,7 +82,7 @@ function doAttack() {
 	delete missilesInFlight[missileId];
     },ATTACK_SPEED);
  
-	socket.broadcast(startMissile);
+	socket.sockets.emit('message',startMissile);
 }
 
 // distance function between 2 points
@@ -112,7 +112,7 @@ function endGame(client) {
 	// XXX if clients.size is 0 reset defaults
     // stopInterval(attackInterval);
 	client.player.dead = true;
-	socket.broadcast({action:'dead',players:players});
+	socket.sockets.emit('message',{action:'dead',players:players});
 	
 }
 
@@ -133,7 +133,7 @@ function detectHit(client,x,y,r) {
        if(within) {
           hitsThisLevel++;
           client.player.score += Math.floor(SCORE_PER_MISSILE);
-          socket.broadcast({action:'score',missile:m,players:players});
+          socket.sockets.emit('message',{action:'score',missile:m,players:players});
 		  missilesInFlight[i].destroyed = true;
        }
     }
@@ -183,7 +183,7 @@ var engine = module.exports = {
 		client.player = {};	
 		client.player.commandxy = getCommand();
 		if(!client.player.commandxy) {
-			client.send({action:'max'});
+			client.emit('message',{action:'max'});
 			return;
 		}
 	    // XXX add not playing message	
@@ -200,9 +200,9 @@ var engine = module.exports = {
 		client.player.name = 'Player ' + players.length;
 		clients[id] = client;	
 		players.push(client.player);
-		socket.broadcast({action:'drawBase',id:id,players:players});
+		socket.sockets.emit('message',{action:'drawBase',id:id,players:players});
 	} else {
-		client.send({action:'playing'});
+		client.emit('message',{action:'playing'});
 	}
    },
    fire: fire,
