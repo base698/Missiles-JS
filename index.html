@@ -27,12 +27,7 @@ var gameEngine = new engine.instance();
 
 gameEngine.setClientInterface(function(t,m){onMessage(m);});
 serverInterface = function(type,msg) {
-  if(msg.action == 'start') gameEngine.start({id:1});
-  if(msg.action == 'removeMissile') {
-  	gameEngine.removeMissile(msg);
-  }
-  if(msg.action == 'fire') gameEngine.fire(1,msg);
-  if(msg.action == 'name') gameEngine.name(msg);
+	gameEngine.onMessage(1,type,msg);
 }
 
 

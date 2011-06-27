@@ -150,8 +150,11 @@ function getCommand() {
 
 var players = [];
 var clientInterface;
+var module;
+if(!module) module = {};
+if(module.exports == undefined)  module.exports = {};
 
-var engine = {
+var engine = module.exports = {
  instance: function() {
 	this.start = function(client) {
 		var id = client.id;
@@ -184,6 +187,15 @@ var engine = {
 			clientInterface('playing',{action:'playing'});
 		}
    };
+	var self = this;
+	this.onMessage = function(id,type,msg) {
+	  if(msg.action == 'start') self.start({id:id});
+	  if(msg.action == 'removeMissile') {
+	  	self.removeMissile(msg);
+	  }
+	  if(msg.action == 'fire') self.fire(id,msg);
+	  if(msg.action == 'name') self.name(msg);	
+	};
    this.fire = function (from,loc) {
    var c = clients[from]; 
 	if(c && !c.player.dead && c.player.missileCount < 2) {
