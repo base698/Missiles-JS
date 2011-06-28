@@ -8,7 +8,7 @@ var available_bases = [
 	[200,BOARD_HEIGHT]];
 var SPLASH_RADIUS = 20;
 var ATTACK_SPEED = 6500;
-var LEVEL_CHANGE = 0.90;
+var LEVEL_CHANGE = 0.80;
 var MISSILE_FREQUENCY = 3000;
 var TARGET_RANGE = BOARD_WIDTH;
 var MISSILE_PER_LEVEL = 10;
@@ -28,7 +28,7 @@ function levelUp() {
   clearInterval(attackInterval);
   MISSILE_FREQUENCY = Math.floor(MISSILE_FREQUENCY * LEVEL_CHANGE);
   ATTACK_SPEED = Math.floor(ATTACK_SPEED * LEVEL_CHANGE);
-  MISSILE_PER_LEVEL = MISSILE_PER_LEVEL * 1.05;
+  MISSILE_PER_LEVEL = MISSILE_PER_LEVEL * 1.15;
   SCORE_PER_MISSILE = SCORE_PER_MISSILE * 1.05;
   // XXX Increase target precision as well.
   attackInterval = setInterval(function(){doAttack();},MISSILE_FREQUENCY);
@@ -150,9 +150,6 @@ function getCommand() {
 
 var players = [];
 var clientInterface;
-var module;
-if(!module) module = {};
-if(module.exports == undefined)  module.exports = {};
 
 var engine = module.exports = {
  instance: function() {
