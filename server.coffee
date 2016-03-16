@@ -1,12 +1,11 @@
-io = require "socket.io"
-express = require('express')
-app = express.createServer()
 engine = require './engine'
-
+express = require('express')
+app = express()
 oneYear = 1000*60*60*24
-app.use(express.static(__dirname, { maxAge: oneYear }))
-io = io.listen app
-app.listen 1337
+app.use(express.static(__dirname))
+server = require('http').createServer(app)
+io = require("socket.io").listen(server)
+server.listen(1337)
 
 start = (client)->
 	engine.setSocket(io)
@@ -18,3 +17,9 @@ io.sockets.on 'connection', (client) ->
 		if m.action == 'removeMissile' then engine.removeMissile(m)
 		if m.action == 'fire' then engine.fire(client.id,m)
 		if m.action == 'name' then engine.name(m)
+
+
+
+
+
+
